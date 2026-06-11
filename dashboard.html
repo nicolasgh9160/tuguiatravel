@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard — TuguiaTravel Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<!-- ── SIDEBAR ───────────────────────────────────────────── -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <i class="bi bi-map"></i> TuguiaTravel
+  </div>
+  <nav class="py-2 flex-grow-1">
+    <div class="sidebar-seccion">Proveedores</div>
+    <button class="sidebar-btn activo" onclick="cambiarPanel('hoteles', this)">
+      <i class="bi bi-building"></i> Hoteles
+    </button>
+    <button class="sidebar-btn" onclick="cambiarPanel('restaurantes', this)">
+      <i class="bi bi-cup-hot"></i> Restaurantes
+    </button>
+    <button class="sidebar-btn" onclick="cambiarPanel('agencias', this)">
+      <i class="bi bi-compass"></i> Agencias
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <div class="user-avatar" id="userAvatar">A</div>
+      <div>
+        <div id="userName" class="text-white fw-semibold" style="font-size:.88rem">Admin</div>
+        <div class="text-white-50" style="font-size:.75rem">Administrador</div>
+      </div>
+    </div>
+    <button class="sidebar-btn px-0" style="color:#fca5a5" onclick="cerrarSesion()">
+      <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+    </button>
+  </div>
+</div>
+
+<!-- ── CONTENIDO PRINCIPAL ──────────────────────────────── -->
+<div class="main-wrap">
+
+  <!-- Topbar -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 id="panelTitulo" class="h4 fw-bold mb-0" style="font-family:'Poppins',sans-serif;color:#0f3d2e">
+      🏨 Hoteles
+    </h1>
+    <button class="btn-nuevo" onclick="abrirModal()">
+      <i class="bi bi-plus-lg"></i> Nuevo proveedor
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="stat-card bg-white p-3 d-flex align-items-center gap-3">
+        <div class="stat-icono" style="background:#e6f6ee;color:#1f7a4d"><i class="bi bi-building"></i></div>
+        <div><div class="stat-lbl">Hoteles</div><div class="stat-val" id="stH">—</div></div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card bg-white p-3 d-flex align-items-center gap-3">
+        <div class="stat-icono" style="background:#dbeafe;color:#1d4ed8"><i class="bi bi-cup-hot"></i></div>
+        <div><div class="stat-lbl">Restaurantes</div><div class="stat-val" id="stR">—</div></div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card bg-white p-3 d-flex align-items-center gap-3">
+        <div class="stat-icono" style="background:#ffedd5;color:#c2410c"><i class="bi bi-compass"></i></div>
+        <div><div class="stat-lbl">Agencias</div><div class="stat-val" id="stA">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="tbl-card bg-white">
+    <div class="tbl-toolbar d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <input class="buscador" id="buscador"
+        placeholder="🔍 Buscar por nombre o municipio..." oninput="filtrar()" />
+      <button class="btn-nuevo" onclick="cargarPanel()">
+        <i class="bi bi-arrow-clockwise"></i> Actualizar
+      </button>
+    </div>
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead id="tHead"></thead>
+        <tbody id="tBody">
+          <tr><td colspan="7" class="text-center py-4 text-muted">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── MODAL PROVEEDOR ───────────────────────────────────── -->
+<div class="modal fade" id="modalProv" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitulo">Nuevo Proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="formProv">
+          <input type="hidden" id="fId" />
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="fNombre" required />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Municipio <span class="text-danger">*</span></label>
+              <select class="form-select" id="fMunicipio" required>
+                <option value="">Seleccionar...</option>
+                <option>Pereira</option><option>Santa Rosa</option>
+                <option>Marsella</option><option>Balboa</option>
+                <option>Dosquebradas</option><option>La Virginia</option>
+                <option>Santuario</option><option>Apía</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Teléfono</label>
+              <input type="text" class="form-control" id="fTelefono" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email</label>
+              <input type="email" class="form-control" id="fEmail" />
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Dirección</label>
+              <input type="text" class="form-control" id="fDireccion" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Sitio web</label>
+              <input type="text" class="form-control" id="fWeb" />
+            </div>
+            <div class="col-md-6" id="colExtra"></div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Descripción</label>
+              <textarea class="form-control" id="fDesc" rows="3"></textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Estado</label>
+              <select class="form-select" id="fActivo">
+                <option value="1">Activo</option>
+                <option value="0">Inactivo</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn-guardar btn" onclick="guardar()">
+          <i class="bi bi-check-lg me-1"></i> Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toastWrap"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = 'http://localhost:3000/api';
+let panel = 'hoteles';
+let filas = [];
+
+// ── Auth ──────────────────────────────────────────────────
+const token = localStorage.getItem('tg_token');
+if (!token) window.location.href = 'login.html';
+const nombre = localStorage.getItem('tg_nombre') || 'Admin';
+document.getElementById('userName').textContent = nombre;
+document.getElementById('userAvatar').textContent = nombre[0].toUpperCase();
+
+function hdrs() {
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+}
+function cerrarSesion() {
+  localStorage.removeItem('tg_token');
+  localStorage.removeItem('tg_nombre');
+  window.location.href = 'login.html';
+}
+
+// ── Toast ─────────────────────────────────────────────────
+function toast(msg, err = false) {
+  const t = document.createElement('div');
+  t.className = 'tg-toast' + (err ? ' err' : '');
+  t.innerHTML = `<i class="bi bi-${err ? 'x-circle' : 'check-circle'}"></i> ${msg}`;
+  document.getElementById('toastWrap').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ── Configuración de paneles ──────────────────────────────
+const cfg = {
+  hoteles: {
+    titulo:    '🏨 Hoteles',
+    cols:      ['ID','Nombre','Municipio','Teléfono','Categoría','Estado','Acciones'],
+    extraId:   'fCategoria', extraLabel: 'Categoría', extraTipo: 'select',
+    extraOpts: ['sin categoria','1 estrella','2 estrellas','3 estrellas','4 estrellas','5 estrellas'],
+    extraKey:  'categoria',
+    fila: r => `
+      <td class="text-muted">${r.id}</td>
+      <td><strong>${r.nombre}</strong></td>
+      <td>${r.municipio}</td>
+      <td>${r.telefono || '—'}</td>
+      <td>${r.categoria || '—'}</td>
+      <td><span class="badge-${r.activo ? 'activo' : 'inactivo'}">${r.activo ? 'Activo' : 'Inactivo'}</span></td>`
+  },
+  restaurantes: {
+    titulo:   '☕ Restaurantes',
+    cols:     ['ID','Nombre','Municipio','Teléfono','Tipo cocina','Estado','Acciones'],
+    extraId:  'fTipo', extraLabel: 'Tipo de cocina', extraTipo: 'text',
+    extraKey: 'tipo_cocina',
+    fila: r => `
+      <td class="text-muted">${r.id}</td>
+      <td><strong>${r.nombre}</strong></td>
+      <td>${r.municipio}</td>
+      <td>${r.telefono || '—'}</td>
+      <td>${r.tipo_cocina || '—'}</td>
+      <td><span class="badge-${r.activo ? 'activo' : 'inactivo'}">${r.activo ? 'Activo' : 'Inactivo'}</span></td>`
+  },
+  agencias: {
+    titulo:   '🧭 Agencias',
+    cols:     ['ID','Nombre','Municipio','Teléfono','Especialidad','Estado','Acciones'],
+    extraId:  'fEsp', extraLabel: 'Especialidad', extraTipo: 'text',
+    extraKey: 'especialidad',
+    fila: r => `
+      <td class="text-muted">${r.id}</td>
+      <td><strong>${r.nombre}</strong></td>
+      <td>${r.municipio}</td>
+      <td>${r.telefono || '—'}</td>
+      <td>${r.especialidad || '—'}</td>
+      <td><span class="badge-${r.activo ? 'activo' : 'inactivo'}">${r.activo ? 'Activo' : 'Inactivo'}</span></td>`
+  }
+};
+
+// ── Panel ─────────────────────────────────────────────────
+function cambiarPanel(p, btn) {
+  panel = p;
+  document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+  document.getElementById('buscador').value = '';
+  cargarPanel();
+}
+
+async function cargarPanel() {
+  const c = cfg[panel];
+  document.getElementById('panelTitulo').textContent = c.titulo;
+  document.getElementById('tHead').innerHTML =
+    '<tr>' + c.cols.map(col => `<th>${col}</th>`).join('') + '</tr>';
+  document.getElementById('tBody').innerHTML =
+    `<tr><td colspan="7" class="text-center py-4 text-muted">
+      <span class="spinner-border spinner-border-sm text-success me-2"></span>Cargando...
+    </td></tr>`;
+  try {
+    const res = await fetch(`${API}/${panel}`, { headers: hdrs() });
+    if (res.status === 401) { cerrarSesion(); return; }
+    filas = await res.json();
+    renderTabla(filas);
+    cargarStats();
+  } catch {
+    document.getElementById('tBody').innerHTML =
+      '<tr><td colspan="7" class="text-center py-4 text-danger">Error al cargar datos</td></tr>';
+  }
+}
+
+function renderTabla(datos) {
+  const c = cfg[panel];
+  if (!datos.length) {
+    document.getElementById('tBody').innerHTML =
+      '<tr><td colspan="7" class="text-center py-4 text-muted">No hay registros</td></tr>';
+    return;
+  }
+  document.getElementById('tBody').innerHTML = datos.map(r => `
+    <tr>
+      ${c.fila(r)}
+      <td>
+        <button class="btn-editar me-1" onclick="editar(${r.id})">
+          <i class="bi bi-pencil"></i> Editar
+        </button>
+        <button class="btn-borrar" onclick="eliminar(${r.id}, '${r.nombre.replace(/'/g, "\\'")}')">
+          <i class="bi bi-trash"></i>
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+function filtrar() {
+  const q = document.getElementById('buscador').value.toLowerCase();
+  renderTabla(filas.filter(r =>
+    r.nombre.toLowerCase().includes(q) || (r.municipio || '').toLowerCase().includes(q)
+  ));
+}
+
+async function cargarStats() {
+  for (const [ep, id] of [['hoteles','stH'],['restaurantes','stR'],['agencias','stA']]) {
+    try {
+      const res = await fetch(`${API}/${ep}`, { headers: hdrs() });
+      const d = await res.json();
+      document.getElementById(id).textContent = Array.isArray(d) ? d.length : '—';
+    } catch { document.getElementById(id).textContent = '—'; }
+  }
+}
+
+// ── Modal ─────────────────────────────────────────────────
+let modalBS;
+
+function renderExtra() {
+  const c = cfg[panel];
+  document.getElementById('colExtra').innerHTML = c.extraTipo === 'select'
+    ? `<label class="form-label fw-semibold">${c.extraLabel}</label>
+       <select class="form-select" id="${c.extraId}">
+         ${c.extraOpts.map(o => `<option>${o}</option>`).join('')}
+       </select>`
+    : `<label class="form-label fw-semibold">${c.extraLabel}</label>
+       <input type="text" class="form-control" id="${c.extraId}" />`;
+}
+
+function abrirModal(prov = null) {
+  renderExtra();
+  modalBS = modalBS || new bootstrap.Modal(document.getElementById('modalProv'));
+  if (prov) {
+    document.getElementById('modalTitulo').textContent = 'Editar Proveedor';
+    document.getElementById('fId').value        = prov.id;
+    document.getElementById('fNombre').value    = prov.nombre    || '';
+    document.getElementById('fMunicipio').value = prov.municipio || '';
+    document.getElementById('fTelefono').value  = prov.telefono  || '';
+    document.getElementById('fEmail').value     = prov.email     || '';
+    document.getElementById('fDireccion').value = prov.direccion || '';
+    document.getElementById('fWeb').value       = prov.sitio_web || '';
+    document.getElementById('fDesc').value      = prov.descripcion || '';
+    document.getElementById('fActivo').value    = prov.activo;
+    const el = document.getElementById(cfg[panel].extraId);
+    if (el) el.value = prov[cfg[panel].extraKey] || '';
+  } else {
+    document.getElementById('modalTitulo').textContent = 'Nuevo Proveedor';
+    document.getElementById('formProv').reset();
+    document.getElementById('fId').value = '';
+  }
+  modalBS.show();
+}
+
+async function editar(id) {
+  try {
+    const res = await fetch(`${API}/${panel}/${id}`, { headers: hdrs() });
+    abrirModal(await res.json());
+  } catch { toast('Error al cargar proveedor', true); }
+}
+
+async function guardar() {
+  const nombre    = document.getElementById('fNombre').value.trim();
+  const municipio = document.getElementById('fMunicipio').value;
+  if (!nombre || !municipio) { toast('Nombre y municipio son requeridos', true); return; }
+
+  const c  = cfg[panel];
+  const el = document.getElementById(c.extraId);
+  const id = document.getElementById('fId').value;
+  const body = {
+    nombre, municipio,
+    telefono:     document.getElementById('fTelefono').value,
+    email:        document.getElementById('fEmail').value,
+    direccion:    document.getElementById('fDireccion').value,
+    sitio_web:    document.getElementById('fWeb').value,
+    descripcion:  document.getElementById('fDesc').value,
+    activo:       document.getElementById('fActivo').value,
+    [c.extraKey]: el ? el.value : ''
+  };
+
+  try {
+    const res = await fetch(
+      id ? `${API}/${panel}/${id}` : `${API}/${panel}`,
+      { method: id ? 'PUT' : 'POST', headers: hdrs(), body: JSON.stringify(body) }
+    );
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    toast(id ? 'Proveedor actualizado ✅' : 'Proveedor creado ✅');
+    bootstrap.Modal.getInstance(document.getElementById('modalProv')).hide();
+    cargarPanel();
+  } catch (err) { toast(err.message, true); }
+}
+
+async function eliminar(id, nombre) {
+  if (!confirm(`¿Eliminar "${nombre}"?\nEsta acción no se puede deshacer.`)) return;
+  try {
+    const res = await fetch(`${API}/${panel}/${id}`, { method: 'DELETE', headers: hdrs() });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    toast('Proveedor eliminado');
+    cargarPanel();
+  } catch (err) { toast(err.message, true); }
+}
+
+// Inicio
+cargarPanel();
+</script>
+</body>
+</html>
